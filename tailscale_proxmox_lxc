@@ -16,7 +16,7 @@ apt install ethtool -y
 touch /etc/tuntap.sh && chmod +x /etc/tuntap.sh
 touch /etc/rc.local && chmod +x /etc/rc.local
 
-#### Copy and run this block from #18 to #23:
+#### Copy and run this block from #20 to #25:
 cat <<EOF >>/etc/tuntap.sh
 #!/bin/bash
 NETDEV=$(ip -o route get 8.8.8.8 | cut -f 5 -d " ")
@@ -25,7 +25,7 @@ apt-get update && apt-get upgrade -y
 EOF
 ####
 
-#### Copy and run this block from #27 to #43:
+#### Copy and run this block from #29 to #45:
 cat <<EOF >>/etc/rc.local
 #!/bin/sh -e
 # rc.local
