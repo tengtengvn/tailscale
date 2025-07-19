@@ -1,0 +1,57 @@
+############################################
+#### Run on Proxmox host. Change 103 to the ID of your LXC.
+
+#### Copy and run this block from #5 to #8:
+cat <<EOF >>/etc/pve/lxc/103.conf
+lxc.cgroup2.devices.allow: c 10:200 rwm
+lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+EOF
+
+############################################
+#### Run on LXC:
+
+apt install ethtool -y
+touch /etc/tuntap.sh && chmod +x /etc/tuntap.sh
+touch /etc/rc.local && chmod +x /etc/rc.local
+
+#### Copy and run this block from #18 to #23:
+cat <<EOF >>/etc/tuntap.sh
+#!/bin/bash
+NETDEV=$(ip -o route get 8.8.8.8 | cut -f 5 -d " ")
+ethtool -K eth0 rx-udp-gro-forwarding on rx-gro-list off
+apt-get update && apt-get upgrade -y
+EOF
+####
+
+#### Copy and run this block from #27 to #43:
+cat <<EOF >>/etc/rc.local
+#!/bin/sh -e
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+/etc/tuntap.sh
+
+exit 0
+EOF
+####
+
+#### Prep and install tailscale
+systemctl daemon-reload && systemctl start rc-local && systemctl status rc-local
+echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
+sysctl -p /etc/sysctl.d/99-tailscale.conf
+apt-get update && apt-get upgrade -y
+apt install curl -y
+curl -fsSL https://tailscale.com/install.sh | sh
+
+#### Use your own auth key and register tailscale. Change /22 subnet to your local subnet.
+tailscale up --auth-key=tskey-auth-xxxxxxxx --accept-dns=false --advertise-exit-node --advertise-routes=192.168.4.0/22
+tailscale down && tailscale up && tailscale status
