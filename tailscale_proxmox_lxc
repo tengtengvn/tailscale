@@ -19,13 +19,12 @@ touch /etc/rc.local && chmod +x /etc/rc.local
 #### Copy and run this block from #20 to #25:
 cat <<EOF >>/etc/tuntap.sh
 #!/bin/bash
-NETDEV=$(ip -o route get 8.8.8.8 | cut -f 5 -d " ")
 ethtool -K eth0 rx-udp-gro-forwarding on rx-gro-list off
 apt-get update && apt-get upgrade -y
 EOF
 ####
 
-#### Copy and run this block from #29 to #45:
+#### Copy and run this block from #28 to #44:
 cat <<EOF >>/etc/rc.local
 #!/bin/sh -e
 # rc.local
